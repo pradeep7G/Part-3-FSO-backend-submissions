@@ -9,6 +9,7 @@ morgan.token('data',(req)=>{
 })
 
 app.use(express.json());
+app.use(express.static('build'));
 app.use(cors());
 app.use(morgan('tiny',{
     skip: (req,res) => req.method==='POST'
