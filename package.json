@@ -1,0 +1,27 @@
+{
+  "name": "fso-backend-submissions",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "run": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pradeep7G/FSO-backend-submissions.git"
+  },
+  "author": "pradeep",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/pradeep7G/FSO-backend-submissions/issues"
+  },
+  "homepage": "https://github.com/pradeep7G/FSO-backend-submissions#readme",
+  "devDependencies": {
+    "nodemon": "^2.0.7"
+  },
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
