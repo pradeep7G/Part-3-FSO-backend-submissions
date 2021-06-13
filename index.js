@@ -51,11 +51,42 @@ const generateId=()=>{
 }
 
 app.post('/api/persons',(req,res)=>{
-     person=req.body;
-    // console.log(req.body);
-    person={...person,id:generateId()};
-    persons=persons.concat(person);
-    res.json(person);
+    const person=req.body;//remember you have to enable/import json parser i.e app.use(express.json())
+    console.log(person.name);
+    if(person.name===undefined || person.number===undefined)
+    {
+        if(person.name===undefined)
+        {
+            return res.status(400).json({
+                "error":"name is missing"
+            })
+        }
+        else
+        {
+             return res.status(400).json({
+            "error":"number is missing"
+             })
+        }
+    }
+    else
+    {
+        const isPresent=persons.find(p => p.name===person.name);
+        if(!isPresent)
+        {
+            const newPerson={
+                ...person,
+                id:generateId()
+            }
+            persons=persons.concat(newPerson);
+            res.json(newPerson);
+        }
+        else
+        {
+            return res.status(400).json({
+                "error":"name must be unique"
+            })
+        }
+    }
 })
 app.delete('/api/persons/:id',(req,res)=>{
     const id=Number(req.params.id);
