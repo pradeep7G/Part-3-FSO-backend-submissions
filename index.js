@@ -1,5 +1,6 @@
 const express=require('express');
 const app=express();
+app.use(express.json());
 
 let persons=[
     {
@@ -44,16 +45,26 @@ app.get('/api/persons/:id',(req,res)=>{
     }
 })
 
+const generateId=()=>{
+    const number=Math.floor(Math.random()*100000);
+    return number;
+}
+
+app.post('/api/persons',(req,res)=>{
+     person=req.body;
+    // console.log(req.body);
+    person={...person,id:generateId()};
+    persons=persons.concat(person);
+    res.json(person);
+})
 app.delete('/api/persons/:id',(req,res)=>{
     const id=Number(req.params.id);
     persons=persons.filter(person => person.id !==id);
-    res.send('deleted')
+    res.send('deleted');
 })
 app.get('/info',(req,res)=>{
     res.send(`<div>Phonebook has info for ${persons.length} people</div> <br> ${new Date()}`)
 })
-
-
 
 const PORT=3001;
 
