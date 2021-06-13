@@ -1,7 +1,7 @@
 const express=require('express');
 const app=express();
 
-const persons=[
+let persons=[
     {
         id:1,
         name: "Arto Hellas",
@@ -40,13 +40,19 @@ app.get('/api/persons/:id',(req,res)=>{
         res.json(isPresent);
     }
     else{
-    res.status(400).end('bad request');
+    res.status(400).send('bad request');
     }
 })
 
+app.delete('/api/persons/:id',(req,res)=>{
+    const id=Number(req.params.id);
+    persons=persons.filter(person => person.id !==id);
+    res.send('deleted')
+})
 app.get('/info',(req,res)=>{
     res.send(`<div>Phonebook has info for ${persons.length} people</div> <br> ${new Date()}`)
 })
+
 
 
 const PORT=3001;
