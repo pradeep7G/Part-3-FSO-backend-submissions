@@ -32,6 +32,18 @@ app.get('/api/persons',(req,res)=>{
     res.json(persons);
 })
 
+app.get('/api/persons/:id',(req,res)=>{
+    const id=Number(req.params.id);
+    const isPresent=persons.find(p => p.id === id);
+    if(isPresent)
+    {
+        res.json(isPresent);
+    }
+    else{
+    res.status(400).end('bad request');
+    }
+})
+
 app.get('/info',(req,res)=>{
     res.send(`<div>Phonebook has info for ${persons.length} people</div> <br> ${new Date()}`)
 })
