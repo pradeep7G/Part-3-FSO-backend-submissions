@@ -2,9 +2,20 @@ const express=require('express');
 const morgan=require('morgan');
 
 const app=express();
-app.use(express.json());
-app.use(morgan('tiny'))
 
+morgan.token('data',(req)=>{
+    if(req.body!==undefined)
+    return JSON.stringify(req.body);
+})
+
+app.use(express.json());
+app.use(morgan('tiny',{
+    skip: (req,res) => req.method==='POST'
+}));
+
+app.use(morgan(':method :url :status :req[content-length] - :response-time ms :data',{
+    skip:(req,res)=> req.method!=='POST'
+}));
 let persons=[
     {
         id:1,
@@ -44,7 +55,7 @@ app.get('/api/persons/:id',(req,res)=>{
         res.json(isPresent);
     }
     else{
-    res.status(400).send('bad request');
+        res.status(400).send('bad request');
     }
 })
 
@@ -55,7 +66,6 @@ const generateId=()=>{
 
 app.post('/api/persons',(req,res)=>{
     const person=req.body;//remember you have to enable/import json parser i.e app.use(express.json())
-    console.log(person.name);
     if(person.name===undefined || person.number===undefined)
     {
         if(person.name===undefined)
@@ -66,9 +76,9 @@ app.post('/api/persons',(req,res)=>{
         }
         else
         {
-             return res.status(400).json({
-            "error":"number is missing"
-             })
+            return res.status(400).json({
+                "error":"number is missing"
+            })
         }
     }
     else
