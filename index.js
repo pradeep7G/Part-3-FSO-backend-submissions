@@ -1,6 +1,6 @@
 const express=require('express');
 const morgan=require('morgan');
-
+const cors=require('cors');
 const app=express();
 
 morgan.token('data',(req)=>{
@@ -9,6 +9,7 @@ morgan.token('data',(req)=>{
 })
 
 app.use(express.json());
+app.use(cors());
 app.use(morgan('tiny',{
     skip: (req,res) => req.method==='POST'
 }));
@@ -110,7 +111,7 @@ app.get('/info',(req,res)=>{
     res.send(`<div>Phonebook has info for ${persons.length} people</div> <br> ${new Date()}`)
 })
 
-const PORT=3001;
+const PORT=process.env.PORT || 3001;
 
 app.listen(PORT,()=>{
     console.log(`listening on port ${PORT}`);
