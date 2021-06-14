@@ -25,6 +25,10 @@ const errorHandler=(error,req,res,next)=>{
     {
         return res.status(400).send({error:'malformatted id'});
     }
+    else if(error.name==='ValidationError')
+    {
+        return res.status(400).json({error:error.message});
+    }
     next(error);
 }
 
@@ -50,7 +54,7 @@ app.get('/api/persons/:id',(req,res,next)=>{
    .catch(error=>next(error));
 })
 
-app.post('/api/persons',(req,res)=>{
+app.post('/api/persons',(req,res,next)=>{
     const person=req.body;//remember you have to enable/import json parser i.e app.use(express.json())
     if(person.name===undefined || person.number===undefined)
     {
@@ -79,30 +83,21 @@ app.post('/api/persons',(req,res)=>{
                 })
             }
             else{
-                
-                Person.findOne({"name":person.name})
+           
+                const newPerson=new Person({
+                    name:person.name,
+                    number:person.number,
+                    date:Date(),
+                });
+                newPerson.save()
                 .then(result=>{
-                    if(result)
-                    {
-                        axios.put(`http://localhost:3001/api/persons/${result.id}`,person)
-                        .then(updatedPerson=>res.send(updatedPerson))
-                        .catch(error => next(error))
-                    }
-                    else
-                    {
-                        const newPerson=new Person({
-                            name:person.name,
-                            number:person.number,
-                            date:Date(),
-                        });
-                        newPerson.save().then(result=>{
-                            console.log(`added ${result.name} to phone book`);
-                            res.json(result);
-                        })
-                    }
+                    res.json(result);
                 })
+                .catch(err=>next(err));
+                
             }
         })
+        .catch(error=>next(error));
     }
 })
 app.delete('/api/persons/:id',(req,res,next)=>{
@@ -113,16 +108,15 @@ app.delete('/api/persons/:id',(req,res,next)=>{
     .catch(error => next(error));
 })
 
-app.put('/api/persons/:id',(req,res)=>{
+app.put('/api/persons/:id',(req,res,next)=>{
     const body=req.body;
-
     const person={
         name:body.name,
         number:body.number,
     }
     Person.findByIdAndUpdate(req.params.id,person,{new:true})
     .then(updatedPerson =>{
-        res.json(updatedPerson);
+        res.json(updatedPerson.toJSON());
     })
     .catch(error => next(error));
 })

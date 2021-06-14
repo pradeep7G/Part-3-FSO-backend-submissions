@@ -4,7 +4,7 @@ GET http://localhost:3001/api/persons
 GET http://localhost:3001/
 
 ###
-DELETE http://localhost:3001/api/persons/60c72805e3f6781b8097bda6
+DELETE http://localhost:3001/api/persons/60c718e118f6032d504ffc45
 
 ###
 GET http://localhost:3001/api/persons/@1
@@ -14,7 +14,7 @@ Content-Type: application/json
 
 {
     "name":"I am going to be deleted",
-    "number":"0002"
+    "number":"0005"
 }
 
 ###
@@ -23,5 +23,5 @@ Content-Type: application/json
 
 {
     "name":"I was reborn",
-    "number":"3456"
+    "number":"1456"
 }
