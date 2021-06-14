@@ -85,7 +85,7 @@ app.post('/api/persons',(req,res)=>{
                     if(result)
                     {
                         axios.put(`http://localhost:3001/api/persons/${result.id}`,person)
-                        .then(updatedPerson=>res.send(person))
+                        .then(updatedPerson=>res.send(updatedPerson))
                         .catch(error => next(error))
                     }
                     else
