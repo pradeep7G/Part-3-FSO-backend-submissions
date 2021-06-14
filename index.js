@@ -60,7 +60,7 @@ app.post('/api/persons',(req,res)=>{
     {
         Person.find({number:person.number})
         .then((result)=>{
-            console.log(result.length);
+            // console.log(result.length);
             if(result.length==1)
             {
                 res.json({
@@ -82,9 +82,11 @@ app.post('/api/persons',(req,res)=>{
     }
 })
 app.delete('/api/persons/:id',(req,res)=>{
-    const id=Number(req.params.id);
-    persons=persons.filter(person => person.id !==id);
-    res.send('deleted');
+    Person.findByIdAndRemove(req.params.id)
+    .then(result=>{
+        res.status(204).end();
+    })
+    .catch(error => res.send(error))
 })
 app.get('/info',(req,res)=>{
     res.send(`<div>Phonebook has info for ${persons.length} people</div> <br> ${new Date()}`)
