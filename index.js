@@ -19,6 +19,15 @@ app.use(morgan('tiny',{
     skip: (req,res) => req.method==='POST'
 }));
 
+const errorHandler=(error,req,res,next)=>{
+
+    if(error.name==='CastError')
+    {
+        return res.status(400).send({error:'malformatted id'});
+    }
+    next(error);
+}
+
 app.use(morgan(':method :url :status :req[content-length] - :response-time ms :data',{
     skip:(req,res)=> req.method!=='POST'
 }));
@@ -33,10 +42,12 @@ app.get('/api/persons',(req,res)=>{
     })
 })
 
-app.get('/api/persons/:id',(req,res)=>{
-   Person.findById(req.params.id).then(result => {
+app.get('/api/persons/:id',(req,res,next)=>{
+   Person.findById(req.params.id)
+   .then(result => {
        res.json(result);
    })
+   .catch(error=>next(error));
 })
 
 app.post('/api/persons',(req,res)=>{
@@ -86,11 +97,13 @@ app.delete('/api/persons/:id',(req,res)=>{
     .then(result=>{
         res.status(204).end();
     })
-    .catch(error => res.send(error))
+    .catch(error => next(error));
 })
 app.get('/info',(req,res)=>{
     res.send(`<div>Phonebook has info for ${persons.length} people</div> <br> ${new Date()}`)
 })
+
+app.use(errorHandler);
 
 const PORT=process.env.PORT ;
 
