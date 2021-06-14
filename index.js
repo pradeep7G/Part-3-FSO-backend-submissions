@@ -2,11 +2,11 @@ require('dotenv').config();
 const express=require('express');
 const morgan=require('morgan');
 const cors=require('cors');
+const axios=require('axios');
 const app=express();
 const mongoose=require('mongoose');
 const Person=require('./models/Person');
 const url=process.env.MONGODB_URI;
-
 morgan.token('data',(req)=>{
     if(req.body!==undefined)
     return JSON.stringify(req.body);
@@ -79,26 +79,54 @@ app.post('/api/persons',(req,res)=>{
                 })
             }
             else{
-                const newPerson=new Person({
-                    name:person.name,
-                    number:person.number,
-                    date:Date(),
-                });
-                newPerson.save().then(result=>{
-                    console.log(`added ${result.name} to phone book`);
-                    res.json(result);
+                
+                Person.findOne({"name":person.name})
+                .then(result=>{
+                    if(result)
+                    {
+                        axios.put(`http://localhost:3001/api/persons/${result.id}`,person)
+                        .then(updatedPerson=>res.send(person))
+                        .catch(error => next(error))
+                    }
+                    else
+                    {
+                        const newPerson=new Person({
+                            name:person.name,
+                            number:person.number,
+                            date:Date(),
+                        });
+                        newPerson.save().then(result=>{
+                            console.log(`added ${result.name} to phone book`);
+                            res.json(result);
+                        })
+                    }
                 })
             }
         })
     }
 })
-app.delete('/api/persons/:id',(req,res)=>{
+app.delete('/api/persons/:id',(req,res,next)=>{
     Person.findByIdAndRemove(req.params.id)
     .then(result=>{
         res.status(204).end();
     })
     .catch(error => next(error));
 })
+
+app.put('/api/persons/:id',(req,res)=>{
+    const body=req.body;
+
+    const person={
+        name:body.name,
+        number:body.number,
+    }
+    Person.findByIdAndUpdate(req.params.id,person,{new:true})
+    .then(updatedPerson =>{
+        res.json(updatedPerson);
+    })
+    .catch(error => next(error));
+})
+
 app.get('/info',(req,res)=>{
     res.send(`<div>Phonebook has info for ${persons.length} people</div> <br> ${new Date()}`)
 })
