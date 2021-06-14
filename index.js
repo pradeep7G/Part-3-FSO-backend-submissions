@@ -4,32 +4,8 @@ const morgan=require('morgan');
 const cors=require('cors');
 const app=express();
 const mongoose=require('mongoose');
+const Person=require('./models/Person');
 const url=process.env.MONGODB_URI;
-
-console.log('connecting to ',url);
-mongoose.connect(url,{useNewUrlParser:true,useUnifiedTopology:true,useFindAndModify:true,useCreateIndex:true})
-.then(result =>{
-    console.log('connected to Mongo DB');
-})
-.catch(error=>{
-    console.log('error connecting mongo DB: ',error.message);
-})
-
-const personSchema=new mongoose.Schema({
-        name:String,
-        number:String,
-        date:Date,
-});
-
-personSchema.set('toJSON',{
-  transform:(document,returnedObject)=>{
-    returnedObject.id=returnedObject._id.toString();
-    delete returnedObject._id;
-    delete returnedObject.__v;
-  }
-})
-
-const Person=mongoose.model('Person',personSchema);
 
 morgan.token('data',(req)=>{
     if(req.body!==undefined)
@@ -46,28 +22,6 @@ app.use(morgan('tiny',{
 app.use(morgan(':method :url :status :req[content-length] - :response-time ms :data',{
     skip:(req,res)=> req.method!=='POST'
 }));
-// let persons=[
-//     {
-//         id:1,
-//         name: "Arto Hellas",
-//         number: "040-123456"
-//     },
-//     {
-//         id:2,
-//         name:"Ada Lovelace",
-//         number:"39-44-5323523"
-//     },
-//     {
-//         id: 3,
-//         name: "Dan Abramov",
-//         number: "12-43-234345"
-//     },
-//     {
-//         id:4,
-//         name:"Mary-Poppendick",
-//         number:"39-23-6423122"
-//     }
-// ]
 
 app.get('/',(req,res)=>{
     res.send('<h1>Phone Book</h1>')
@@ -104,22 +58,27 @@ app.post('/api/persons',(req,res)=>{
     }
     else
     {
-        const isPresent=persons.find(p => p.name===person.name);
-        if(!isPresent)
-        {
-            const newPerson={
-                ...person,
-                id:generateId()
+        Person.find({number:person.number})
+        .then((result)=>{
+            console.log(result.length);
+            if(result.length==1)
+            {
+                res.json({
+                    error:"number must be unique"
+                })
             }
-            persons=persons.concat(newPerson);
-            res.json(newPerson);
-        }
-        else
-        {
-            return res.status(400).json({
-                "error":"name must be unique"
-            })
-        }
+            else{
+                const newPerson=new Person({
+                    name:person.name,
+                    number:person.number,
+                    date:Date(),
+                });
+                newPerson.save().then(result=>{
+                    console.log(`added ${result.name} to phone book`);
+                    res.json(result);
+                })
+            }
+        })
     }
 })
 app.delete('/api/persons/:id',(req,res)=>{
