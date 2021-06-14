@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express=require('express');
 const morgan=require('morgan');
-// const cors=require('cors');
+const cors=require('cors');
 const axios=require('axios');
 const app=express();
 const mongoose=require('mongoose');
@@ -14,11 +14,14 @@ morgan.token('data',(req)=>{
 
 app.use(express.json());
 app.use(express.static('build'));
-// app.use(cors());
+app.use(cors());
 app.use(morgan('tiny',{
     skip: (req,res) => req.method==='POST'
 }));
 
+app.use(morgan(':method :url :status :req[content-length] - :response-time ms :data',{
+    skip:(req,res)=> req.method!=='POST'
+}));
 const errorHandler=(error,req,res,next)=>{
 
     if(error.name==='CastError')
@@ -27,14 +30,12 @@ const errorHandler=(error,req,res,next)=>{
     }
     else if(error.name==='ValidationError')
     {
+        console.log(error.message)
         return res.status(400).json({error:error.message});
     }
     next(error);
 }
 
-app.use(morgan(':method :url :status :req[content-length] - :response-time ms :data',{
-    skip:(req,res)=> req.method!=='POST'
-}));
 
 app.get('/',(req,res)=>{
     res.send('<h1>Phone Book</h1>')
@@ -75,7 +76,6 @@ app.post('/api/persons',(req,res,next)=>{
     {
         Person.find({number:person.number})
         .then((result)=>{
-            // console.log(result.length);
             if(result.length==1)
             {
                 res.json({
@@ -91,6 +91,7 @@ app.post('/api/persons',(req,res,next)=>{
                 });
                 newPerson.save()
                 .then(result=>{
+                    console.log(result)
                     res.json(result);
                 })
                 .catch(err=>next(err));
@@ -114,7 +115,8 @@ app.put('/api/persons/:id',(req,res,next)=>{
         name:body.name,
         number:body.number,
     }
-    Person.findByIdAndUpdate(req.params.id,person,{new:true})
+
+    Person.findByIdAndUpdate(req.params.id,person,{new:true,runValidators:true})
     .then(updatedPerson =>{
         res.json(updatedPerson.toJSON());
     })
@@ -122,12 +124,14 @@ app.put('/api/persons/:id',(req,res,next)=>{
 })
 
 app.get('/info',(req,res)=>{
-    res.send(`<div>Phonebook has info for ${persons.length} people</div> <br> ${new Date()}`)
+    Person.countDocuments({}, function( err, count){
+        res.send(`<div>Phonebook has info for ${count} people</div> <br> ${new Date()}`)
+})
 })
 
 app.use(errorHandler);
 
-const PORT=process.env.PORT ;
+const PORT=process.env.PORT || 3001;
 
 app.listen(PORT,()=>{
     console.log(`listening on port ${PORT}`);

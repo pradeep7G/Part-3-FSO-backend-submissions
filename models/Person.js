@@ -2,7 +2,7 @@ const mongoose=require('mongoose');
 const uniqueValidator=require('mongoose-unique-validator');
 
 const url=process.env.MONGODB_URI;
-console.log('connecting to Mongo DB ',url);
+console.log('connecting to Mongo DB ');
 mongoose.connect(url,{useNewUrlParser:true,useUnifiedTopology:true,useFindAndModify:false,useCreateIndex:true})
 .then(()=>{
     console.log('connected to Mongo DB');
