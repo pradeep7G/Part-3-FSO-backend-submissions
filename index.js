@@ -1,4 +1,3 @@
-require('dotenv').config()
 const express=require('express')
 const morgan=require('morgan')
 const cors=require('cors')
@@ -12,8 +11,8 @@ morgan.token('data',(req) => {
     return JSON.stringify(req.body)
 })
 
-app.use(express.json())
 app.use(express.static('build'))
+app.use(express.json())
 app.use(cors())
 app.use(morgan('tiny',{
   skip: (req,res) => req.method==='POST'
@@ -22,20 +21,6 @@ app.use(morgan('tiny',{
 app.use(morgan(':method :url :status :req[content-length] - :response-time ms :data',{
   skip:(req,res) => req.method!=='POST'
 }))
-const errorHandler=(error,req,res,next) => {
-
-  if(error.name==='CastError')
-  {
-    return res.status(400).send({ error:'malformatted id' })
-  }
-  else if(error.name==='ValidationError')
-  {
-    console.log(error.message)
-    return res.status(400).json({ error:error.message })
-  }
-  next(error)
-}
-
 
 app.get('/',(req,res) => {
   res.send('<h1>Phone Book</h1>')
@@ -50,7 +35,14 @@ app.get('/api/persons',(req,res) => {
 app.get('/api/persons/:id',(req,res,next) => {
   Person.findById(req.params.id)
     .then(result => {
-      res.json(result)
+      if(result)
+      {
+        res.json(result)
+      }
+      else
+      {
+        res.status(404).end()
+      }
     })
     .catch(error => next(error))
 })
@@ -91,7 +83,7 @@ app.post('/api/persons',(req,res,next) => {
           })
           newPerson.save()
             .then(result => {
-              console.log(result)
+              // console.log(result)
               res.json(result)
             })
             .catch(err => next(err))
@@ -128,6 +120,20 @@ app.get('/info',(req,res) => {
     res.send(`<div>Phonebook has info for ${count} people</div> <br> ${new Date()}`)
   })
 })
+
+const errorHandler=(error,req,res,next) => {
+
+  if(error.name==='CastError')
+  {
+    return res.status(400).send({ error:'malformatted id' })
+  }
+  else if(error.name==='ValidationError')
+  {
+    console.log(error.message)
+    return res.status(400).json({ error:error.message })
+  }
+  next(error)
+}
 
 app.use(errorHandler)
 

@@ -41,7 +41,7 @@ if(args===5)
 else if(args===3)
 {
   console.log('Phonebook:')
-  Person.find({ name:'pradeep' }).then((person) => {
+  Person.find({}).then((result) => {
     result.forEach(person => {
       console.log(person.name,person.number)
     })
